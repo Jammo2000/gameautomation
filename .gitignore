@@ -9,6 +9,7 @@ local.properties
 .settings/
 .loadpath
 .recommenders
+.vscode
 *.exe
 
 # External tool builders
