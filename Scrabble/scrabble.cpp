@@ -33,6 +33,7 @@ class Move {
         this->y = y;
         this->right = right;
         this->word = word;
+        value = 0;
     }
     // returns the points gained if this move was placed onto board
     // assumes the move is legal
@@ -41,38 +42,38 @@ class Move {
         int mainMultiplier = 1;
         int tilesPlaced = 0;
         int totalCrossPoints = 0;
-        if (this->right) {
-            for (int i = 0; i < this->word.length(); i++) {
-                switch (board[this->y][this->x + i]) {
+        if (right) {
+            for (int i = 0; i < word.length(); i++) {
+                switch (board[y][x + i]) {
                     case L3:
-                        mainPoints += 3 * points[this->word[i]];
+                        mainPoints += 3 * points[word[i]];
                         break;
                     case L2:
-                        mainPoints += 2 * points[this->word[i]];
+                        mainPoints += 2 * points[word[i]];
                         break;
                     case W2:
-                        mainPoints += points[this->word[i]];
+                        mainPoints += points[word[i]];
                         mainMultiplier *= 2;
                         break;
                     case W3:
-                        mainPoints += points[this->word[i]];
+                        mainPoints += points[word[i]];
                         mainMultiplier *= 3;
                         break;
                     case EM:
-                        mainPoints += points[this->word[i]];
+                        mainPoints += points[word[i]];
                         tilesPlaced++;
                         break;
                     default:
-                        mainPoints += points[this->word[i]];
+                        mainPoints += points[word[i]];
                 }
 
                 // cross words
                 int letterPosition;
                 int searchTop;
                 string crossWord = "";
-                int searchY = this->y - 1;
+                int searchY = y - 1;
                 // search to tops
-                while (searchY > 0 && isLetter(board[searchY][this->x + i])) {
+                while (searchY > 0 && isLetter(board[searchY][x + i])) {
                     searchY--;
                 }
                 if (searchY > 0) {
@@ -81,17 +82,17 @@ class Move {
                 searchTop = searchY;
                 letterPosition = y - searchY;
                 while (searchY < BoardSize &&
-                       (isLetter(board[searchY][this->x + i]) ||
-                        searchY == this->y)) {
-                    crossWord += board[searchY][this->x + i];
+                       (isLetter(board[searchY][x + i] || searchY == y))) {
+                    crossWord += board[searchY][x + i];
                     searchY++;
                 }
-                if (crossWord.length() > 1) {
+                if (crossWord.length() > 1 &&
+                    !isLetter(crossWord[letterPosition])) {
                     int crossPoints = 0;
                     int crossMultiplier = 1;
-                    crossWord[letterPosition] = this->word[i];
+                    crossWord[letterPosition] = word[i];
                     for (int j = 0; j < crossWord.length(); j++) {
-                        switch (board[searchTop + j][this->x + i]) {
+                        switch (board[searchTop + j][x + i]) {
                             case L3:
                                 crossPoints += 3 * points[crossWord[j]];
                                 break;
@@ -113,38 +114,37 @@ class Move {
                     }
                 }
             }
-            return mainPoints * mainMultiplier + totalCrossPoints;
         } else {
-            for (int i = 0; i < this->word.length(); i++) {
-                switch (board[this->y + i][this->x]) {
+            for (int i = 0; i < word.length(); i++) {
+                switch (board[y + i][x]) {
                     case L3:
-                        mainPoints += 3 * points[this->word[i]];
+                        mainPoints += 3 * points[word[i]];
                         break;
                     case L2:
-                        mainPoints += 2 * points[this->word[i]];
+                        mainPoints += 2 * points[word[i]];
                         break;
                     case W2:
-                        mainPoints += points[this->word[i]];
+                        mainPoints += points[word[i]];
                         mainMultiplier *= 2;
                         break;
                     case W3:
-                        mainPoints += points[this->word[i]];
+                        mainPoints += points[word[i]];
                         mainMultiplier *= 3;
                         break;
                     case EM:
-                        mainPoints += points[this->word[i]];
+                        mainPoints += points[word[i]];
                         tilesPlaced++;
                         break;
                     default:
-                        mainPoints += points[this->word[i]];
+                        mainPoints += points[word[i]];
                 }
 
                 // cross words
                 int letterPosition;
                 string crossWord = "";
-                int searchX = this->x - 1;
+                int searchX = x - 1;
                 // search to tops
-                while (searchX > 0 && isLetter(board[this->y][searchX])) {
+                while (searchX > 0 && isLetter(board[y][searchX])) {
                     searchX--;
                 }
                 if (searchX > 0) {
@@ -152,18 +152,18 @@ class Move {
                 }
                 int searchTop = searchX;
                 letterPosition = x - searchX;
-                while (
-                    searchX < BoardSize &&
-                    (isLetter(board[this->y][searchX]) || searchX == this->x)) {
-                    crossWord += board[this->y][searchX];
+                while (searchX < BoardSize &&
+                       (isLetter(board[y][searchX]) || searchX == x)) {
+                    crossWord += board[y][searchX];
                     searchX++;
                 }
-                if (crossWord.length() > 1) {
+                if (crossWord.length() > 1 &&
+                    !isLetter(crossWord[letterPosition])) {
                     int crossPoints = 0;
                     int crossMultiplier = 1;
-                    crossWord[letterPosition] = this->word[i];
+                    crossWord[letterPosition] = word[i];
                     for (int j = 0; j < crossWord.length(); j++) {
-                        switch (board[this->y + i][searchTop + j]) {
+                        switch (board[y + i][searchTop + j]) {
                             case L3:
                                 crossPoints += 3 * points[crossWord[j]];
                                 break;
@@ -185,17 +185,14 @@ class Move {
                     }
                 }
             }
-            return mainPoints * mainMultiplier + totalCrossPoints +
-                               tilesPlaced >=
-                           7
-                       ? 50
-                       : 0;
         }
+        return mainPoints * mainMultiplier + totalCrossPoints +
+               (tilesPlaced >= 7 ? 50 : 0);
     }
 
     bool operator==(const Move &other) {
-        return this->x == other.x && this->y == other.y &&
-               this->right == other.right && this->word == other.word;
+        return x == other.x && y == other.y && right == other.right &&
+               word == other.word;
     }
 };
 ostream &operator<<(ostream &os, const Move &move) {
@@ -252,6 +249,11 @@ class AlphabetSet {
                 throw invalid_argument(
                     "Alphabet Sets may not contain negatives");
             }
+        }
+    }
+    AlphabetSet() {
+        for (uint8_t i = 0; i < 26; i++) {
+            data[i] = 0;
         }
     }
 };
@@ -333,9 +335,6 @@ void printBoard(const char (&board)[BoardSize][BoardSize]) {
 
 void makeMove(Move &move, char (&board)[BoardSize][BoardSize]) {
     int x = move.x;
-    if (move.word == "HAEMOCYANINS") {
-        cout << "ohno";
-    }
     int y = move.y;
     for (int i = 0; i < move.word.length(); i++) {
         board[y][x] = move.word[i];
@@ -344,10 +343,8 @@ void makeMove(Move &move, char (&board)[BoardSize][BoardSize]) {
     }
 }
 
-// returns a basic point count, disregarding tiles
-int pointCount(string &word) { return 132; }
-// which letters could be placed such that no invalid words would be created, if
-// the main word is in the direction of parameter right.
+// which letters could be placed such that no invalid words would be
+// created, if the main word is in the direction of parameter right.
 array<array<AlphabetSet, BoardSize>, BoardSize> getAllowedLetters(
     const char (&board)[BoardSize][BoardSize], bool right) {
     array<array<AlphabetSet, BoardSize>, BoardSize> returnValue;
@@ -356,6 +353,9 @@ array<array<AlphabetSet, BoardSize>, BoardSize> getAllowedLetters(
             if (isLetter(board[y][x])) {
                 returnValue[y][x].insert(board[y][x]);
             } else if (right) {
+                if (x == 7 && y == 0) {
+                    cout << "yeetus" << endl;
+                }
                 string crossWord = "";
                 int searchY = y - 1;
                 int letterPosition;  // position of letter in the word
@@ -363,7 +363,7 @@ array<array<AlphabetSet, BoardSize>, BoardSize> getAllowedLetters(
                 while (searchY > 0 && isLetter(board[searchY][x])) {
                     searchY--;
                 }
-                if (searchY > 0) {
+                if (searchY > 0 || y == 0) {
                     searchY++;
                 }
                 letterPosition = y - searchY;
@@ -392,7 +392,7 @@ array<array<AlphabetSet, BoardSize>, BoardSize> getAllowedLetters(
                 while (searchX > 0 && isLetter(board[y][searchX])) {
                     searchX--;
                 }
-                if (searchX > 0) {
+                if (searchX > 0 || x == 0) {
                     searchX++;
                 }
                 letterPosition = x - searchX;
@@ -579,8 +579,9 @@ int main() {
             char newBoard[BoardSize][BoardSize];
             memcpy(newBoard, board, BoardSize * BoardSize * sizeof(char));
             makeMove(moves[moveChoice], newBoard);
-            cout << "Move #" << moveChoice << ", for "
-                 << moves[moveChoice].getPoints(board) << " points:" << endl;
+            int points = moves[moveChoice].getPoints(board);
+            cout << "Move #" << moveChoice << ", for " << points
+                 << " points:" << endl;
             printBoard(newBoard);
             cout << "Enter new move #, or s to select: ";
             cin >> input;
