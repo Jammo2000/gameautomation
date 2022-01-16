@@ -2,6 +2,7 @@
 #include <array>
 #include <cmath>
 #include <fstream>
+#include <initializer_list>
 #include <iostream>
 #include <map>
 #include <unordered_set>
@@ -10,13 +11,39 @@ using namespace std;
 
 #define BoardSize 15
 
-enum specialSpace { EM, L3, L2, W3, W2 };
+enum specialSpace { EM,
+                    L3,
+                    L2,
+                    W3,
+                    W2 };
 
 unordered_map<char, short> points{
-    {'A', 1}, {'B', 3}, {'C', 3},  {'D', 2}, {'E', 1},  {'F', 4}, {'G', 2},
-    {'H', 4}, {'I', 1}, {'J', 8},  {'K', 5}, {'L', 1},  {'M', 3}, {'N', 1},
-    {'O', 1}, {'P', 3}, {'Q', 10}, {'R', 1}, {'S', 1},  {'T', 1}, {'U', 1},
-    {'V', 4}, {'W', 4}, {'X', 8},  {'Y', 4}, {'Z', 10},
+    {'A', 1},
+    {'B', 3},
+    {'C', 3},
+    {'D', 2},
+    {'E', 1},
+    {'F', 4},
+    {'G', 2},
+    {'H', 4},
+    {'I', 1},
+    {'J', 8},
+    {'K', 5},
+    {'L', 1},
+    {'M', 3},
+    {'N', 1},
+    {'O', 1},
+    {'P', 3},
+    {'Q', 10},
+    {'R', 1},
+    {'S', 1},
+    {'T', 1},
+    {'U', 1},
+    {'V', 4},
+    {'W', 4},
+    {'X', 8},
+    {'Y', 4},
+    {'Z', 10},
 };
 
 inline bool isLetter(char c) { return c >= 'A' && c <= 'Z'; }
@@ -44,6 +71,7 @@ class Move {
         int totalCrossPoints = 0;
         if (right) {
             for (int i = 0; i < word.length(); i++) {
+								tilesPlaced++;
                 switch (board[y][x + i]) {
                     case L3:
                         mainPoints += 3 * points[word[i]];
@@ -61,10 +89,10 @@ class Move {
                         break;
                     case EM:
                         mainPoints += points[word[i]];
-                        tilesPlaced++;
                         break;
                     default:
                         mainPoints += points[word[i]];
+												tilesPlaced--;
                 }
 
                 // cross words
@@ -86,8 +114,7 @@ class Move {
                     crossWord += board[searchY][x + i];
                     searchY++;
                 }
-                if (crossWord.length() > 1 &&
-                    !isLetter(crossWord[letterPosition])) {
+                if (crossWord.length() > 1 && !isLetter(crossWord[letterPosition])) {
                     int crossPoints = 0;
                     int crossMultiplier = 1;
                     crossWord[letterPosition] = word[i];
@@ -116,6 +143,7 @@ class Move {
             }
         } else {
             for (int i = 0; i < word.length(); i++) {
+								tilesPlaced++;
                 switch (board[y + i][x]) {
                     case L3:
                         mainPoints += 3 * points[word[i]];
@@ -137,6 +165,7 @@ class Move {
                         break;
                     default:
                         mainPoints += points[word[i]];
+												tilesPlaced--;
                 }
 
                 // cross words
@@ -157,8 +186,7 @@ class Move {
                     crossWord += board[y][searchX];
                     searchX++;
                 }
-                if (crossWord.length() > 1 &&
-                    !isLetter(crossWord[letterPosition])) {
+                if (crossWord.length() > 1 && !isLetter(crossWord[letterPosition])) {
                     int crossPoints = 0;
                     int crossMultiplier = 1;
                     crossWord[letterPosition] = word[i];
@@ -214,7 +242,11 @@ class AlphabetSet {
             data[i] += other.data[i];
         }
     }
-
+    void insert(string &s) {
+        for (char c : s) {
+            insert(c);
+        }
+    }
     unsigned short operator[](char c) {
         if (isLetter(c)) {
             return data[charToIndex(c)];
@@ -227,13 +259,12 @@ class AlphabetSet {
 
     bool contains(AlphabetSet &other) {
         for (uint8_t i = 0; i < 26; i++) {
-            if (data[i] <= other.data[i]) {
+            if (data[i] < other.data[i]) {
                 return false;
             }
-            return true;
         }
-    };
-
+        return true;
+    }
     void remove(char c) {
         if (data[charToIndex(c) > 0]) {
             data[charToIndex(c)]--;
@@ -246,14 +277,25 @@ class AlphabetSet {
             if (data[i] >= other.data[i]) {
                 data[i] -= other.data[i];
             } else {
-                throw invalid_argument(
-                    "Alphabet Sets may not contain negatives");
+                throw invalid_argument("Alphabet Sets may not contain negatives");
             }
         }
     }
-    AlphabetSet() {
+    void reset() {
         for (uint8_t i = 0; i < 26; i++) {
             data[i] = 0;
+        }
+    }
+    void print() {
+        for (uint8_t i = 0; i < 26; i++) {
+            cout << data[i] << " ";
+        }
+    }
+    AlphabetSet() { reset(); }
+    AlphabetSet(initializer_list<char> list) {
+        reset();
+        for (char c : list) {
+            insert(c);
         }
     }
 };
@@ -313,7 +355,7 @@ bool isInWordlist(string word) {
 }
 
 void printBoard(const char (&board)[BoardSize][BoardSize]) {
-    cout << "  |";
+    cout << "    |";
     for (int x = 0; x < BoardSize; x++) {
         cout << (x < 10 ? x : x - 10) << "|";
     }
@@ -419,7 +461,8 @@ array<array<AlphabetSet, BoardSize>, BoardSize> getAllowedLetters(
     return returnValue;
 }
 
-vector<Move> getLegalMoves(const char (&board)[BoardSize][BoardSize]) {
+vector<Move> getLegalMoves(const char (&board)[BoardSize][BoardSize],
+                           AlphabetSet tilesAvailable) {
     vector<Move> moves;
     bool hasCharacter = false;
     for (int x = 0; x < BoardSize; x++) {
@@ -436,12 +479,11 @@ vector<Move> getLegalMoves(const char (&board)[BoardSize][BoardSize]) {
         for (bool right : dirs) {
             auto validLetters = getAllowedLetters(board, right);
             for (int wordIndex = 0; wordIndex < wordlist.size(); wordIndex++) {
-                float completion =
-                    (float)(wordIndex + wordlist.size() * right) /
-                    (wordlist.size() * 2);
+                float completion = (float)(wordIndex + wordlist.size() * right) /
+                                   (wordlist.size() * 2);
                 if (floor(completion * 100) > floor(prevCompletion * 100)) {
-                    cout << "finding move, " << floor(completion * 100)
-                         << "% complete" << endl;
+                    cout << "finding move, " << floor(completion * 100) << "% complete"
+                         << endl;
                     prevCompletion = completion;
                 }
                 string word = wordlist[wordIndex];
@@ -450,23 +492,23 @@ vector<Move> getLegalMoves(const char (&board)[BoardSize][BoardSize]) {
                 int maxY = right ? BoardSize - 1 : BoardSize - wordLength;
                 for (int x = 0; x < maxX; x++) {
                     for (int y = 0; y < maxY; y++) {
+                        AlphabetSet tilesUsed;
                         bool hasNeighbors = false;
                         bool placesTiles = false;
                         if (right) {
                             if (x > 0 && isLetter(board[y][x - 1])) {
                                 continue;
                             }
-                            if (x < BoardSize &&
-                                isLetter(board[y][x + wordLength])) {
+                            if (x < BoardSize && isLetter(board[y][x + wordLength])) {
                                 continue;
                             }
                             for (int i = 0; i < wordLength; i++) {
                                 if (!isLetter(board[y][x + i])) {
-                                    if (!validLetters[y][x + i].contains(
-                                            word[i])) {
+                                    if (!validLetters[y][x + i].contains(word[i])) {
                                         goto nextWord;
                                     }
                                     placesTiles = true;
+                                    tilesUsed.insert(word[i]);
                                 } else {
                                     if (board[y][x + i] != word[i]) {
                                         goto nextWord;
@@ -476,10 +518,8 @@ vector<Move> getLegalMoves(const char (&board)[BoardSize][BoardSize]) {
                                 }
                                 if (!hasNeighbors) {
                                     // touches on side
-                                    if ((y > 0 &&
-                                         isLetter(board[y - 1][x + i])) ||
-                                        (y < BoardSize - 1 &&
-                                         isLetter(board[y + 1][x + i]))) {
+                                    if ((y > 0 && isLetter(board[y - 1][x + i])) ||
+                                        (y < BoardSize - 1 && isLetter(board[y + 1][x + i]))) {
                                         hasNeighbors = true;
                                     }
                                 }
@@ -488,17 +528,16 @@ vector<Move> getLegalMoves(const char (&board)[BoardSize][BoardSize]) {
                             if (y > 0 && isLetter(board[y - 1][x])) {
                                 continue;
                             }
-                            if (y < BoardSize &&
-                                isLetter(board[y + wordLength][x])) {
+                            if (y < BoardSize && isLetter(board[y + wordLength][x])) {
                                 continue;
                             }
                             for (int i = 0; i < wordLength; i++) {
                                 if (!isLetter(board[y + i][x])) {
-                                    if (!validLetters[y + i][x].contains(
-                                            word[i])) {
+                                    if (!validLetters[y + i][x].contains(word[i])) {
                                         goto nextWord;
                                     }
                                     placesTiles = true;
+                                    tilesUsed.insert(word[i]);
                                 } else {
                                     if (board[y + i][x] != word[i]) {
                                         goto nextWord;
@@ -508,16 +547,15 @@ vector<Move> getLegalMoves(const char (&board)[BoardSize][BoardSize]) {
                                 }
                                 if (!hasNeighbors) {
                                     // touches on side
-                                    if ((x > 0 &&
-                                         isLetter(board[y + i][x - 1])) ||
-                                        (x < BoardSize - 1 &&
-                                         isLetter(board[y + i][x + 1]))) {
+                                    if ((x > 0 && isLetter(board[y + i][x - 1])) ||
+                                        (x < BoardSize - 1 && isLetter(board[y + i][x + 1]))) {
                                         hasNeighbors = true;
                                     }
                                 }
                             }
                         }
-                        if (hasNeighbors && placesTiles) {
+                        if (hasNeighbors && placesTiles &&
+                            tilesAvailable.contains(tilesUsed)) {
                             Move move(x, y, right, word);
                             moves.push_back(move);
                         }
@@ -530,6 +568,16 @@ vector<Move> getLegalMoves(const char (&board)[BoardSize][BoardSize]) {
         for (string word : wordlist) {
             if (word.length() < 3) {
                 continue;  // rule nobody remembers
+            }
+            if (word == "LINE") {
+                cout << "line" << endl;
+            }
+            AlphabetSet tilesUsed;
+            for (char c : word) {
+                tilesUsed.insert(c);
+            }
+            if (!tilesAvailable.contains(tilesUsed)) {
+                continue;
             }
             for (int x = 0; x < BoardSize; x++) {
                 for (int y = 0; y < BoardSize; y++) {
@@ -560,10 +608,27 @@ vector<Move> getLegalMoves(const char (&board)[BoardSize][BoardSize]) {
     return moves;
 }
 
+void toUpperCase(string &s) {
+    transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return toupper(c); });
+}
+
+void updateTileSet(AlphabetSet &tileSet) {
+    string input;
+    cout << "Enter the drawn tiles, then press enter: ";
+    cin >> input;
+    toUpperCase(input);
+    cout << input;
+    tileSet.insert(input);
+}
+
 int main() {
     cout << wordlist.size() << " words loaded to dictionary" << endl;
+    AlphabetSet tiles;
     while (true) {
-        vector<Move> moves = getLegalMoves(board);
+        updateTileSet(tiles);
+        cout << "tiles: ";
+        tiles.print();
+        vector<Move> moves = getLegalMoves(board, tiles);
         cout << moves.size() << " legal moves found" << endl;
         cout << "evaluating moves" << endl;
         for (size_t i = 0; i < moves.size(); i++) {
