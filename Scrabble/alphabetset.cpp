@@ -19,7 +19,8 @@ void AlphabetSet::insert(string &s) {
         insert(c);
     }
 }
-unsigned short AlphabetSet::operator[](char c) {
+
+const unsigned short AlphabetSet::at(char c) {
     if (isLetter(c)) {
         return data[charToIndex(c)];
     } else {

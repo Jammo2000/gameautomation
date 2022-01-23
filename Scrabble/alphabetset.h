@@ -17,14 +17,14 @@ class AlphabetSet {
 
     void insert(AlphabetSet &other);
     void insert(std::string &s);
-    unsigned short operator[](char c);
-    bool contains(char c);
+    unsigned short at(char c) const;
+    bool contains(char c) const;
 
-    bool contains(AlphabetSet &other);
+    bool contains(AlphabetSet &other) const;
     void remove(char c);
     void remove(AlphabetSet &other);
     void reset();
-    void print();
+    void print() const;
     AlphabetSet();
     AlphabetSet(std::initializer_list<char> list);
 };

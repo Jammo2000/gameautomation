@@ -71,21 +71,21 @@ int Move::getPoints(const char (&board)[BoardSize][BoardSize]) {
                 for (int j = 0; j < crossWord.length(); j++) {
                     switch (board[searchTop + j][x + i]) {
                         case L3:
-                            crossPoints += 3 * points.at(crossWord[j]);
+                            crossPoints += 3 * tileValues.at(crossWord[j]);
                             break;
                         case L2:
-                            crossPoints += 2 * points.at(crossWord[j]);
+                            crossPoints += 2 * tileValues.at(crossWord[j]);
                             break;
                         case W2:
-                            crossPoints += points.at(crossWord[j]);
+                            crossPoints += tileValues.at(crossWord[j]);
                             crossMultiplier *= 2;
                             break;
                         case W3:
-                            crossPoints += points.at(crossWord[j]);
+                            crossPoints += tileValues.at(crossWord[j]);
                             crossMultiplier *= 3;
                             break;
                         default:
-                            crossPoints += points.at(crossWord[j]);
+                            crossPoints += tileValues.at(crossWord[j]);
                     }
                     totalCrossPoints += crossPoints * crossMultiplier;
                 }
@@ -96,25 +96,25 @@ int Move::getPoints(const char (&board)[BoardSize][BoardSize]) {
             tilesPlaced++;
             switch (board[y + i][x]) {
                 case L3:
-                    mainPoints += 3 * points.at(word[i]);
+                    mainPoints += 3 * tileValues.at(word[i]);
                     break;
                 case L2:
-                    mainPoints += 2 * points.at(word[i]);
+                    mainPoints += 2 * tileValues.at(word[i]);
                     break;
                 case W2:
-                    mainPoints += points.at(word[i]);
+                    mainPoints += tileValues.at(word[i]);
                     mainMultiplier *= 2;
                     break;
                 case W3:
-                    mainPoints += points.at(word[i]);
+                    mainPoints += tileValues.at(word[i]);
                     mainMultiplier *= 3;
                     break;
                 case EM:
-                    mainPoints += points.at(word[i]);
+                    mainPoints += tileValues.at(word[i]);
                     tilesPlaced++;
                     break;
                 default:
-                    mainPoints += points.at(word[i]);
+                    mainPoints += tileValues.at(word[i]);
                     tilesPlaced--;
             }
 
