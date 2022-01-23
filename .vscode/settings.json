@@ -2,6 +2,21 @@
     "files.associations": {
         "iostream": "cpp",
         "*.tcc": "cpp",
-        "stdexcept": "cpp"
+        "stdexcept": "cpp",
+        "initializer_list": "cpp",
+        "array": "cpp",
+        "memory": "cpp",
+        "limits": "cpp",
+        "streambuf": "cpp",
+        "typeinfo": "cpp",
+        "type_traits": "cpp",
+        "list": "cpp",
+        "map": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp",
+        "xhash": "cpp",
+        "xstring": "cpp",
+        "xtree": "cpp",
+        "algorithm": "cpp"
     }
 }

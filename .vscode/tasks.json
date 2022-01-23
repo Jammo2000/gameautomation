@@ -6,9 +6,9 @@
             "command": "C:/msys64/mingw64/bin/g++.exe",
             "args": [
                 "-g",
-                "${file}",
+                "${workspaceFolder}\\Scrabble\\*.cpp",
                 "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+                "${workspaceFolder}\\Scrabble\\scrabble.exe"
             ],
             "options": {
                 "cwd": "${fileDirname}"
