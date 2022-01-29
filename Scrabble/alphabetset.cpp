@@ -3,6 +3,8 @@
 #include <iostream>
 #include <stdexcept>
 
+#include "rules.h"
+
 using namespace std;
 
 unsigned short AlphabetSet::charToIndex(char c) { return c - 'A'; }
@@ -19,8 +21,19 @@ void AlphabetSet::insert(string &s) {
         insert(c);
     }
 }
+void AlphabetSet::setQuantity(char c, unsigned short quantity) {
+    if (isLetter(c)) {
+        data[charToIndex(c)] = quantity;
+    } else {
+        throw out_of_range("Character is not a letter");
+    }
+}
 
-const unsigned short AlphabetSet::at(char c) {
+void AlphabetSet::setDataDirect(unsigned short newData[26]) {
+    memcpy(newData, data, sizeof(data));
+}
+
+unsigned short AlphabetSet::at(char c) const {
     if (isLetter(c)) {
         return data[charToIndex(c)];
     } else {
@@ -28,9 +41,9 @@ const unsigned short AlphabetSet::at(char c) {
     }
 }
 
-bool AlphabetSet::contains(char c) { return data[charToIndex(c)] > 0; }
+bool AlphabetSet::contains(char c) const { return data[charToIndex(c)] > 0; }
 
-bool AlphabetSet::contains(AlphabetSet &other) {
+bool AlphabetSet::contains(AlphabetSet &other) const {
     for (uint8_t i = 0; i < 26; i++) {
         if (data[i] < other.data[i]) {
             return false;
@@ -59,7 +72,7 @@ void AlphabetSet::reset() {
         data[i] = 0;
     }
 }
-void AlphabetSet::print() {
+void AlphabetSet::print() const {
     for (uint8_t i = 0; i < 26; i++) {
         cout << data[i] << " ";
     }
@@ -69,5 +82,10 @@ AlphabetSet::AlphabetSet(initializer_list<char> list) {
     reset();
     for (char c : list) {
         insert(c);
+    }
+}
+AlphabetSet::AlphabetSet(bool isLiteralData, initializer_list<unsigned short> list) {
+    for (uint8_t i = 0; i < 26; i++) {
+        data[i] = (unsigned short)list.begin()[i];
     }
 }

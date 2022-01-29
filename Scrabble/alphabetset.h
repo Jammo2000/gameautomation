@@ -6,17 +6,19 @@
 #include <initializer_list>
 #include <string>
 
-#include "rules.h"
 class AlphabetSet {
    protected:
     unsigned short data[26];
-    inline unsigned short charToIndex(char c);
+    static inline unsigned short charToIndex(char c);
 
    public:
     void insert(char c);
 
     void insert(AlphabetSet &other);
     void insert(std::string &s);
+    void setQuantity(char c, unsigned short quantity);
+    void setDataDirect(unsigned short newData[26]);
+
     unsigned short at(char c) const;
     bool contains(char c) const;
 
@@ -27,5 +29,6 @@ class AlphabetSet {
     void print() const;
     AlphabetSet();
     AlphabetSet(std::initializer_list<char> list);
+    AlphabetSet(bool isLiteralData, std::initializer_list<unsigned short> list);
 };
 #endif
