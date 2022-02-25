@@ -35,11 +35,5 @@ const AlphabetSet tileValues(true, {
 const char alphabet[26] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
                            'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
                            'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
-enum specialSpace { EM,
-                    L3,
-                    L2,
-                    W3,
-                    W2 };
-
 inline bool isLetter(char c) { return c >= 'A' && c <= 'Z'; }
 #endif

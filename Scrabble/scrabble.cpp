@@ -9,11 +9,12 @@
 #include <vector>
 
 #include "alphabetset.h"
+#include "board.h"
 #include "move.h"
 #include "rules.h"
 using namespace std;
 
-char board[BoardSize][BoardSize] = {
+Board board = {
     {W3, EM, EM, L2, EM, EM, EM, W3, EM, EM, EM, L2, EM, EM, W3},
     {EM, W2, EM, EM, EM, L3, EM, EM, EM, L3, EM, EM, EM, W2, EM},
     {EM, EM, W2, EM, EM, EM, L2, EM, L2, EM, EM, EM, W2, EM, EM},
@@ -63,46 +64,15 @@ bool isInWordlist(string word) {
     return false;
 }
 
-void printBoard(const char (&board)[BoardSize][BoardSize]) {
-    cout << "    |";
-    for (int x = 0; x < BoardSize; x++) {
-        cout << (x < 10 ? x : x - 10) << "|";
-    }
-    cout << endl;
-    for (int y = 0; y < BoardSize; y++) {
-        cout << (y < 10 ? " " : "") << y << "|";
-        for (int x = 0; x < BoardSize; x++) {
-            if (isLetter(board[y][x])) {
-                cout << board[y][x];
-            } else {
-                cout << " ";
-            }
-            cout << "|";
-        }
-        cout << endl;
-    }
-    cout << endl;
-}
-
-void makeMove(Move &move, char (&board)[BoardSize][BoardSize]) {
-    int x = move.x;
-    int y = move.y;
-    for (int i = 0; i < move.word.length(); i++) {
-        board[y][x] = move.word[i];
-        x += move.right;
-        y += !move.right;
-    }
-}
-
 // which letters could be placed such that no invalid words would be
 // created, if the main word is in the direction of parameter right.
-array<array<AlphabetSet, BoardSize>, BoardSize> getAllowedLetters(
-    const char (&board)[BoardSize][BoardSize], bool right) {
-    array<array<AlphabetSet, BoardSize>, BoardSize> returnValue;
-    for (int x = 0; x < BoardSize; x++) {
-        for (int y = 0; y < BoardSize; y++) {
-            if (isLetter(board[y][x])) {
-                returnValue[y][x].insert(board[y][x]);
+array<array<AlphabetSet, Board::size>, Board::size> getAllowedLetters(
+    const Board &board, bool right) {
+    array<array<AlphabetSet, Board::size>, Board::size> returnValue;
+    for (int x = 0; x < Board::size; x++) {
+        for (int y = 0; y < Board::size; y++) {
+            if (isLetter(board.at(x, y))) {
+                returnValue[y][x].insert(board.at(x, y));
             } else if (right) {
                 if (x == 7 && y == 0) {
                     cout << "yeetus" << endl;
@@ -111,16 +81,16 @@ array<array<AlphabetSet, BoardSize>, BoardSize> getAllowedLetters(
                 int searchY = y - 1;
                 int letterPosition;  // position of letter in the word
                 // search to tops
-                while (searchY > 0 && isLetter(board[searchY][x])) {
+                while (searchY > 0 && isLetter(board.at(x, searchY))) {
                     searchY--;
                 }
                 if (searchY > 0 || y == 0) {
                     searchY++;
                 }
                 letterPosition = y - searchY;
-                while (searchY < BoardSize &&
-                       (isLetter(board[searchY][x]) || searchY == y)) {
-                    crossWord += board[searchY][x];
+                while (searchY < Board::size &&
+                       (isLetter(board.at(x, searchY)) || searchY == y)) {
+                    crossWord += board.at(x, searchY);
                     searchY++;
                 }
                 if (crossWord.length() > 1) {
@@ -140,16 +110,16 @@ array<array<AlphabetSet, BoardSize>, BoardSize> getAllowedLetters(
                 int searchX = x - 1;
                 int letterPosition;  // position of letter in the word
                 // search to tops
-                while (searchX > 0 && isLetter(board[y][searchX])) {
+                while (searchX > 0 && isLetter(board.at(searchX, y))) {
                     searchX--;
                 }
                 if (searchX > 0 || x == 0) {
                     searchX++;
                 }
                 letterPosition = x - searchX;
-                while (searchX < BoardSize &&
-                       (isLetter(board[y][searchX]) || searchX == x)) {
-                    crossWord += board[y][searchX];
+                while (searchX < Board::size &&
+                       (isLetter(board.at(searchX, y)) || searchX == x)) {
+                    crossWord += board.at(searchX, y);
                     searchX++;
                 }
                 if (crossWord.length() > 1) {
@@ -170,13 +140,12 @@ array<array<AlphabetSet, BoardSize>, BoardSize> getAllowedLetters(
     return returnValue;
 }
 
-vector<Move> getLegalMoves(const char (&board)[BoardSize][BoardSize],
-                           AlphabetSet tilesAvailable) {
+vector<Move> getLegalMoves(const Board &board, AlphabetSet tilesAvailable) {
     vector<Move> moves;
     bool hasCharacter = false;
-    for (int x = 0; x < BoardSize; x++) {
-        for (int y = 0; y < BoardSize; y++) {
-            if (isLetter(board[y][x])) {
+    for (int x = 0; x < Board::size; x++) {
+        for (int y = 0; y < Board::size; y++) {
+            if (isLetter(board.at(x, y))) {
                 hasCharacter = true;
             }
         }
@@ -188,38 +157,41 @@ vector<Move> getLegalMoves(const char (&board)[BoardSize][BoardSize],
         for (bool right : dirs) {
             auto validLetters = getAllowedLetters(board, right);
             for (int wordIndex = 0; wordIndex < wordlist.size(); wordIndex++) {
-                float completion = (float)(wordIndex + wordlist.size() * right) /
-                                   (wordlist.size() * 2);
+                float completion =
+                    (float)(wordIndex + wordlist.size() * right) /
+                    (wordlist.size() * 2);
                 if (floor(completion * 100) > floor(prevCompletion * 100)) {
-                    cout << "finding move, " << floor(completion * 100) << "% complete"
-                         << endl;
+                    cout << "finding move, " << floor(completion * 100)
+                         << "% complete" << endl;
                     prevCompletion = completion;
                 }
                 string word = wordlist[wordIndex];
                 int wordLength = word.length();
-                int maxX = right ? BoardSize - wordLength : BoardSize - 1;
-                int maxY = right ? BoardSize - 1 : BoardSize - wordLength;
+                int maxX = right ? Board::size - wordLength : Board::size - 1;
+                int maxY = right ? Board::size - 1 : Board::size - wordLength;
                 for (int x = 0; x < maxX; x++) {
                     for (int y = 0; y < maxY; y++) {
                         AlphabetSet tilesUsed;
                         bool hasNeighbors = false;
                         bool placesTiles = false;
                         if (right) {
-                            if (x > 0 && isLetter(board[y][x - 1])) {
+                            if (x > 0 && isLetter(board.at(x - 1, y))) {
                                 continue;
                             }
-                            if (x < BoardSize && isLetter(board[y][x + wordLength])) {
+                            if (x < Board::size &&
+                                isLetter(board.at(x + wordLength, y))) {
                                 continue;
                             }
                             for (int i = 0; i < wordLength; i++) {
-                                if (!isLetter(board[y][x + i])) {
-                                    if (!validLetters[y][x + i].contains(word[i])) {
+                                if (!isLetter(board.at(x + i, y))) {
+                                    if (!validLetters[y][x + i].contains(
+                                            word[i])) {
                                         goto nextWord;
                                     }
                                     placesTiles = true;
                                     tilesUsed.insert(word[i]);
                                 } else {
-                                    if (board[y][x + i] != word[i]) {
+                                    if (board.at(x + i, y) != word[i]) {
                                         goto nextWord;
                                     }
                                     // crosses another word
@@ -227,28 +199,32 @@ vector<Move> getLegalMoves(const char (&board)[BoardSize][BoardSize],
                                 }
                                 if (!hasNeighbors) {
                                     // touches on side
-                                    if ((y > 0 && isLetter(board[y - 1][x + i])) ||
-                                        (y < BoardSize - 1 && isLetter(board[y + 1][x + i]))) {
+                                    if ((y > 0 &&
+                                         isLetter(board.at(x + i, y - 1))) ||
+                                        (y < Board::size - 1 &&
+                                         isLetter(board.at(x + i, y + 1)))) {
                                         hasNeighbors = true;
                                     }
                                 }
                             }
                         } else {
-                            if (y > 0 && isLetter(board[y - 1][x])) {
+                            if (y > 0 && isLetter(board.at(x, y - 1))) {
                                 continue;
                             }
-                            if (y < BoardSize && isLetter(board[y + wordLength][x])) {
+                            if (y < Board::size &&
+                                isLetter(board.at(x, y + wordLength))) {
                                 continue;
                             }
                             for (int i = 0; i < wordLength; i++) {
-                                if (!isLetter(board[y + i][x])) {
-                                    if (!validLetters[y + i][x].contains(word[i])) {
+                                if (!isLetter(board.at(x, y + i))) {
+                                    if (!validLetters[y + i][x].contains(
+                                            word[i])) {
                                         goto nextWord;
                                     }
                                     placesTiles = true;
                                     tilesUsed.insert(word[i]);
                                 } else {
-                                    if (board[y + i][x] != word[i]) {
+                                    if (board.at(x, y + i) != word[i]) {
                                         goto nextWord;
                                     }
                                     // crosses another word
@@ -256,8 +232,10 @@ vector<Move> getLegalMoves(const char (&board)[BoardSize][BoardSize],
                                 }
                                 if (!hasNeighbors) {
                                     // touches on side
-                                    if ((x > 0 && isLetter(board[y + i][x - 1])) ||
-                                        (x < BoardSize - 1 && isLetter(board[y + i][x + 1]))) {
+                                    if ((x > 0 &&
+                                         isLetter(board.at(x - 1, y + i))) ||
+                                        (x < Board::size - 1 &&
+                                         isLetter(board.at(x + 1, y + i)))) {
                                         hasNeighbors = true;
                                     }
                                 }
@@ -288,15 +266,15 @@ vector<Move> getLegalMoves(const char (&board)[BoardSize][BoardSize],
             if (!tilesAvailable.contains(tilesUsed)) {
                 continue;
             }
-            for (int x = 0; x < BoardSize; x++) {
-                for (int y = 0; y < BoardSize; y++) {
+            for (int x = 0; x < Board::size; x++) {
+                for (int y = 0; y < Board::size; y++) {
                     for (bool right : dirs) {
                         int endX = x + (word.length() - 1) * right;
                         int endY = y + (word.length() - 1) * !right;
-                        if (endX >= BoardSize || endY >= BoardSize) {
+                        if (endX >= Board::size || endY >= Board::size) {
                             continue;
                         }
-                        int center = BoardSize / 2;
+                        int center = Board::size / 2;
                         if (x == center) {
                             if (y <= center && endY >= center) {
                                 Move m(x, y, right, word);
@@ -318,7 +296,8 @@ vector<Move> getLegalMoves(const char (&board)[BoardSize][BoardSize],
 }
 
 void toUpperCase(string &s) {
-    transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return toupper(c); });
+    transform(s.begin(), s.end(), s.begin(),
+              [](unsigned char c) { return toupper(c); });
 }
 
 void updateTileSet(AlphabetSet &tileSet) {
@@ -341,7 +320,7 @@ int main() {
         cout << moves.size() << " legal moves found" << endl;
         cout << "evaluating moves" << endl;
         for (size_t i = 0; i < moves.size(); i++) {
-            moves[i].value = moves[i].getPoints(board);
+            moves[i].value = board.getPoint()
         }
         cout << "sorting moves by value" << endl;
         sort(moves.begin(), moves.end(),
@@ -350,8 +329,8 @@ int main() {
         string input = "0";
         do {
             moveChoice = stoi(input);
-            char newBoard[BoardSize][BoardSize];
-            memcpy(newBoard, board, BoardSize * BoardSize * sizeof(char));
+            char newBoard[Board::size][Board::size];
+            memcpy(newBoard, board, Board::size * Board::size * sizeof(char));
             makeMove(moves[moveChoice], newBoard);
             int points = moves[moveChoice].getPoints(board);
             cout << "Move #" << moveChoice << ", for " << points

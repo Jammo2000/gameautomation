@@ -7,7 +7,7 @@
 #include <string>
 
 class AlphabetSet {
-   protected:
+   private:
     unsigned short data[26];
     static inline unsigned short charToIndex(char c);
 
