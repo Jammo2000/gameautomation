@@ -11,7 +11,7 @@ unsigned short AlphabetSet::charToIndex(char c) { return c - 'A'; }
 
 void AlphabetSet::insert(char c) { data[charToIndex(c)]++; }
 
-void AlphabetSet::insert(AlphabetSet &other) {
+void AlphabetSet::insert(const AlphabetSet &other) {
     for (uint8_t i = 0; i < 26; i++) {
         data[i] += other.data[i];
     }
@@ -43,13 +43,21 @@ unsigned short AlphabetSet::at(char c) const {
 
 bool AlphabetSet::contains(char c) const { return data[charToIndex(c)] > 0; }
 
-bool AlphabetSet::contains(AlphabetSet &other) const {
+bool AlphabetSet::contains(const AlphabetSet &other) const {
     for (uint8_t i = 0; i < 26; i++) {
         if (data[i] < other.data[i]) {
             return false;
         }
     }
     return true;
+}
+
+unsigned AlphabetSet::total() const{
+	unsigned result = 0;
+	for (uint8_t i = 0; i < 26; i++) {
+        result+=data[i];
+  }
+	return result;
 }
 void AlphabetSet::remove(char c) {
     if (data[charToIndex(c) > 0]) {
@@ -58,7 +66,7 @@ void AlphabetSet::remove(char c) {
         throw invalid_argument("Alphabet Sets may not contain negatives");
     }
 }
-void AlphabetSet::remove(AlphabetSet &other) {
+void AlphabetSet::remove(const AlphabetSet &other) {
     for (uint8_t i = 0; i < 26; i++) {
         if (data[i] >= other.data[i]) {
             data[i] -= other.data[i];

@@ -2,8 +2,9 @@
 
 #include <string>
 
+#include "board.h"
+#include "move.h"
 #include "rules.h"
-
 using namespace std;
 Move::Move(int x, int y, bool right, string word) {
     this->x = x;
@@ -51,7 +52,7 @@ int Move::getPoints(const Board &board) const {
                 string crossWord = "";
                 int searchY = y - 1;
                 // search to tops
-                while (searchY > 0 && isLetter(board[searchY][x + i])) {
+                while (searchY > 0 && isLetter(board.at(x + i, searchY))) {
                     searchY--;
                 }
                 if (searchY > 0) {
@@ -59,9 +60,9 @@ int Move::getPoints(const Board &board) const {
                 }
                 searchTop = searchY;
                 letterPosition = y - searchY;
-                while (searchY < BoardSize &&
-                       (isLetter(board[searchY][x + i] || searchY == y))) {
-                    crossWord += board[searchY][x + i];
+                while (searchY < Board::size &&
+                       (isLetter(board.at(x + i, searchY) || searchY == y))) {
+                    crossWord += searchY==y?word[i]:board.at(x + i, searchY);
                     searchY++;
                 }
                 if (crossWord.length() > 1 &&
@@ -70,7 +71,7 @@ int Move::getPoints(const Board &board) const {
                     int crossMultiplier = 1;
                     crossWord[letterPosition] = word[i];
                     for (int j = 0; j < crossWord.length(); j++) {
-                        switch (board[searchTop + j][x + i]) {
+                        switch (board.at(x + i, searchTop + j)) {
                             case L3:
                                 crossPoints += 3 * tileValues.at(crossWord[j]);
                                 break;
@@ -96,7 +97,7 @@ int Move::getPoints(const Board &board) const {
     } else {
         for (int i = 0; i < word.length(); i++) {
             tilesPlaced++;
-            switch (board[y + i][x]) {
+            switch (board.at(x, y + i)) {
                 case L3:
                     mainPoints += 3 * tileValues.at(word[i]);
                     break;
@@ -119,13 +120,13 @@ int Move::getPoints(const Board &board) const {
                     mainPoints += tileValues.at(word[i]);
                     tilesPlaced--;
             }
-            if (!isLetter(board[y + i][x])) {
+            if (!isLetter(board.at(x, y + i))) {
                 // cross words
                 int letterPosition;
                 string crossWord = "";
                 int searchX = x - 1;
                 // search to tops
-                while (searchX > 0 && isLetter(board[y][searchX])) {
+                while (searchX > 0 && isLetter(board.at(searchX, y))) {
                     searchX--;
                 }
                 if (searchX > 0) {
@@ -133,9 +134,9 @@ int Move::getPoints(const Board &board) const {
                 }
                 int searchTop = searchX;
                 letterPosition = x - searchX;
-                while (searchX < BoardSize &&
-                       (isLetter(board[y][searchX]) || searchX == x)) {
-                    crossWord += board[y][searchX];
+                while (searchX < Board::size &&
+                       (isLetter(board.at(searchX, y)) || searchX == x)) {
+                    crossWord += searchX==x?word[i]:board.at(searchX, y);
                     searchX++;
                 }
                 if (crossWord.length() > 1 &&
@@ -144,7 +145,7 @@ int Move::getPoints(const Board &board) const {
                     int crossMultiplier = 1;
                     crossWord[letterPosition] = word[i];
                     for (int j = 0; j < crossWord.length(); j++) {
-                        switch (board[y + i][searchTop + j]) {
+                        switch (board.at(searchTop + j, y + i)) {
                             case L3:
                                 crossPoints += 3 * tileValues.at(crossWord[j]);
                                 break;
@@ -170,6 +171,28 @@ int Move::getPoints(const Board &board) const {
     }
     return mainPoints * mainMultiplier + totalCrossPoints +
            (tilesPlaced >= 7 ? 50 : 0);
+}
+AlphabetSet Move::tilesUsed(const Board &board) const {
+    AlphabetSet result;
+    if (right) {
+        for (int i = 0; i < word.length(); i++) {
+            if (!isLetter(board.at(x + i, y))) {
+                result.insert(word[i]);
+            }
+        }
+    } else {
+        for (int i = 0; i < word.length(); i++) {
+            if (!isLetter(board.at(x, y + i))) {
+                result.insert(word[i]);
+            }
+        }
+    }
+    return result;
+}
+
+std::ostream& operator<<(std::ostream& os, const Move& move) {
+	os<<(move.right?"Horizontal ":"Vertical ")<<move.word<<" at ("<<move.x<<", "<<move.y<<")";
+	return os;
 }
 
 bool Move::operator==(const Move &other) const {

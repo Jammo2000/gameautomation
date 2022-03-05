@@ -14,7 +14,7 @@ class AlphabetSet {
    public:
     void insert(char c);
 
-    void insert(AlphabetSet &other);
+    void insert(const AlphabetSet &other);
     void insert(std::string &s);
     void setQuantity(char c, unsigned short quantity);
     void setDataDirect(unsigned short newData[26]);
@@ -22,9 +22,10 @@ class AlphabetSet {
     unsigned short at(char c) const;
     bool contains(char c) const;
 
-    bool contains(AlphabetSet &other) const;
+    bool contains(const AlphabetSet &other) const;
+		unsigned total() const;
     void remove(char c);
-    void remove(AlphabetSet &other);
+    void remove(const AlphabetSet &other);
     void reset();
     void print() const;
     AlphabetSet();

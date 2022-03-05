@@ -1,11 +1,11 @@
+#include "solver.h"
+
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <fstream>
 #include <initializer_list>
 #include <iostream>
-#include <map>
-#include <unordered_set>
 #include <vector>
 
 #include "alphabetset.h"
@@ -13,7 +13,6 @@
 #include "move.h"
 #include "rules.h"
 using namespace std;
-
 Board board = {
     {W3, EM, EM, L2, EM, EM, EM, W3, EM, EM, EM, L2, EM, EM, W3},
     {EM, W2, EM, EM, EM, L3, EM, EM, EM, L3, EM, EM, EM, W2, EM},
@@ -31,7 +30,7 @@ Board board = {
     {EM, W2, EM, EM, EM, L3, EM, EM, EM, L3, EM, EM, EM, W2, EM},
     {W3, EM, EM, L2, EM, EM, EM, W3, EM, EM, EM, L2, EM, EM, W3},
 };
-
+AlphabetSet tiles;
 vector<string> readWordList(string filename) {
     fstream file;
     string word;
@@ -48,6 +47,7 @@ vector<string> readWordList(string filename) {
 
 const vector<string> wordlist = readWordList("wordlist.txt");
 
+int maxTiles;
 bool isInWordlist(string word) {
     int min = 0;
     int max = wordlist.size() - 1;
@@ -140,7 +140,7 @@ array<array<AlphabetSet, Board::size>, Board::size> getAllowedLetters(
     return returnValue;
 }
 
-vector<Move> getLegalMoves(const Board &board, AlphabetSet tilesAvailable) {
+vector<Move> getLegalMoves(const Board &board, const AlphabetSet &tilesAvailable) {
     vector<Move> moves;
     bool hasCharacter = false;
     for (int x = 0; x < Board::size; x++) {
@@ -256,9 +256,6 @@ vector<Move> getLegalMoves(const Board &board, AlphabetSet tilesAvailable) {
             if (word.length() < 3) {
                 continue;  // rule nobody remembers
             }
-            if (word == "LINE") {
-                cout << "line" << endl;
-            }
             AlphabetSet tilesUsed;
             for (char c : word) {
                 tilesUsed.insert(c);
@@ -293,55 +290,4 @@ vector<Move> getLegalMoves(const Board &board, AlphabetSet tilesAvailable) {
         }
     }
     return moves;
-}
-
-void toUpperCase(string &s) {
-    transform(s.begin(), s.end(), s.begin(),
-              [](unsigned char c) { return toupper(c); });
-}
-
-void updateTileSet(AlphabetSet &tileSet) {
-    string input;
-    cout << "Enter the drawn tiles, then press enter: ";
-    cin >> input;
-    toUpperCase(input);
-    cout << input;
-    tileSet.insert(input);
-}
-
-int main() {
-    cout << wordlist.size() << " words loaded to dictionary" << endl;
-    AlphabetSet tiles;
-    while (true) {
-        updateTileSet(tiles);
-        cout << "tiles: ";
-        tiles.print();
-        vector<Move> moves = getLegalMoves(board, tiles);
-        cout << moves.size() << " legal moves found" << endl;
-        cout << "evaluating moves" << endl;
-        for (size_t i = 0; i < moves.size(); i++) {
-            moves[i].value = board.getPoint()
-        }
-        cout << "sorting moves by value" << endl;
-        sort(moves.begin(), moves.end(),
-             [](const Move &a, const Move &b) { return b.value < a.value; });
-        int moveChoice = 0;
-        string input = "0";
-        do {
-            moveChoice = stoi(input);
-            char newBoard[Board::size][Board::size];
-            memcpy(newBoard, board, Board::size * Board::size * sizeof(char));
-            makeMove(moves[moveChoice], newBoard);
-            int points = moves[moveChoice].getPoints(board);
-            cout << "Move #" << moveChoice << ", for " << points
-                 << " points:" << endl;
-            printBoard(newBoard);
-            cout << "Enter new move #, or s to select: ";
-            cin >> input;
-        } while (input != "s");
-        makeMove(moves[moveChoice], board);
-        cout << "Move made:" << endl;
-        printBoard(board);
-    }
-    cout << "done";
 }

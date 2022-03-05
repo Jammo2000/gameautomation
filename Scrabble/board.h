@@ -4,14 +4,16 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "move.h"
+class Move;
 struct Board {
     static const int size = 15;
-    void applyMove(const Move &move);
+    void applyMove(const Move& move);
     void print() const;
     char data[size][size];
     char at(int x, int y) const;
     Board(const std::initializer_list<std::initializer_list<char> > args);
+    friend std::ostream& operator<<(std::ostream& os, const Board& board);
 };
+
 enum specialSpace { EM, L3, L2, W3, W2 };
 #endif
