@@ -15,7 +15,7 @@ Move::Move(int x, int y, bool right, string word) {
 }
 // returns the points gained if this move was placed onto board
 // assumes the move is legal
-int Move::getPoints(const Board &board) const {
+int Move::getPoints(const Board& board) const {
     int mainPoints = 0;
     int mainMultiplier = 1;
     int tilesPlaced = 0;
@@ -61,8 +61,8 @@ int Move::getPoints(const Board &board) const {
                 searchTop = searchY;
                 letterPosition = y - searchY;
                 while (searchY < Board::size &&
-                       (isLetter(board.at(x + i, searchY) || searchY == y))) {
-                    crossWord += searchY==y?word[i]:board.at(x + i, searchY);
+                       (isLetter(board.at(x + i, searchY)) || searchY == y)) {
+                    crossWord += board.at(x + i, searchY);
                     searchY++;
                 }
                 if (crossWord.length() > 1 &&
@@ -89,8 +89,8 @@ int Move::getPoints(const Board &board) const {
                             default:
                                 crossPoints += tileValues.at(crossWord[j]);
                         }
-                        totalCrossPoints += crossPoints * crossMultiplier;
                     }
+										totalCrossPoints += crossPoints * crossMultiplier;
                 }
             }
         }
@@ -114,7 +114,6 @@ int Move::getPoints(const Board &board) const {
                     break;
                 case EM:
                     mainPoints += tileValues.at(word[i]);
-                    tilesPlaced++;
                     break;
                 default:
                     mainPoints += tileValues.at(word[i]);
@@ -123,20 +122,21 @@ int Move::getPoints(const Board &board) const {
             if (!isLetter(board.at(x, y + i))) {
                 // cross words
                 int letterPosition;
+                int searchTop;
                 string crossWord = "";
                 int searchX = x - 1;
                 // search to tops
-                while (searchX > 0 && isLetter(board.at(searchX, y))) {
+                while (searchX > 0 && isLetter(board.at(searchX, y + i))) {
                     searchX--;
                 }
                 if (searchX > 0) {
                     searchX++;
                 }
-                int searchTop = searchX;
+                searchTop = searchX;
                 letterPosition = x - searchX;
                 while (searchX < Board::size &&
-                       (isLetter(board.at(searchX, y)) || searchX == x)) {
-                    crossWord += searchX==x?word[i]:board.at(searchX, y);
+                       (isLetter(board.at(searchX, y + i)) || searchX == x)) {
+                    crossWord += board.at(searchX, y + i);
                     searchX++;
                 }
                 if (crossWord.length() > 1 &&
@@ -163,8 +163,8 @@ int Move::getPoints(const Board &board) const {
                             default:
                                 crossPoints += tileValues.at(crossWord[j]);
                         }
-                        totalCrossPoints += crossPoints * crossMultiplier;
                     }
+										totalCrossPoints += crossPoints * crossMultiplier;
                 }
             }
         }
@@ -172,7 +172,7 @@ int Move::getPoints(const Board &board) const {
     return mainPoints * mainMultiplier + totalCrossPoints +
            (tilesPlaced >= 7 ? 50 : 0);
 }
-AlphabetSet Move::tilesUsed(const Board &board) const {
+AlphabetSet Move::tilesUsed(const Board& board) const {
     AlphabetSet result;
     if (right) {
         for (int i = 0; i < word.length(); i++) {
@@ -191,11 +191,11 @@ AlphabetSet Move::tilesUsed(const Board &board) const {
 }
 
 std::ostream& operator<<(std::ostream& os, const Move& move) {
-	os<<(move.right?"Horizontal ":"Vertical ")<<move.word<<" at ("<<move.x<<", "<<move.y<<")";
-	return os;
+    os << (move.right ? "Horizontal " : "Vertical ") << move.word << " at (" << move.x << ", " << move.y << ")";
+    return os;
 }
 
-bool Move::operator==(const Move &other) const {
+bool Move::operator==(const Move& other) const {
     return x == other.x && y == other.y && right == other.right &&
            word == other.word;
 }

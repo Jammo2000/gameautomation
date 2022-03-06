@@ -150,9 +150,9 @@ int main() {
 					isCorrect = getBool("Is this correct? (y/n) ");
 				}
 				int points = opponentMove.getPoints(board);
+				cout<<"I believe this move got "<<points<<" points. (but i'm probably wrong)"<<endl;
 				board.applyMove(opponentMove);
 				board.print();
-				cout<<"I believe this move got "<<points<<" points. (but i'm probably wrong)"<<endl;
 				cout<<endl;
 			}else{
 				printTiles(tiles);
