@@ -12,7 +12,9 @@
 #include "board.h"
 #include "move.h"
 #include "rules.h"
+#include "solver.h"
 using namespace std;
+
 Board board = {
     {W3, EM, EM, L2, EM, EM, EM, W3, EM, EM, EM, L2, EM, EM, W3},
     {EM, W2, EM, EM, EM, L3, EM, EM, EM, L3, EM, EM, EM, W2, EM},
@@ -30,7 +32,6 @@ Board board = {
     {EM, W2, EM, EM, EM, L3, EM, EM, EM, L3, EM, EM, EM, W2, EM},
     {W3, EM, EM, L2, EM, EM, EM, W3, EM, EM, EM, L2, EM, EM, W3},
 };
-AlphabetSet tiles;
 vector<string> readWordList(string filename) {
     fstream file;
     string word;

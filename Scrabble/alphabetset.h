@@ -23,13 +23,14 @@ class AlphabetSet {
     bool contains(char c) const;
 
     bool contains(const AlphabetSet &other) const;
-		unsigned total() const;
+    unsigned total() const;
     void remove(char c);
     void remove(const AlphabetSet &other);
     void reset();
     void print() const;
     AlphabetSet();
     AlphabetSet(std::initializer_list<char> list);
+    AlphabetSet(const std::string &s);
     AlphabetSet(bool isLiteralData, std::initializer_list<unsigned short> list);
 };
 #endif

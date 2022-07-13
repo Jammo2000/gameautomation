@@ -1,8 +1,9 @@
 #include "alphabetset.h"
 
+#include <cstring>
 #include <iostream>
 #include <stdexcept>
-#include <cstring>
+
 #include "rules.h"
 
 using namespace std;
@@ -52,12 +53,12 @@ bool AlphabetSet::contains(const AlphabetSet &other) const {
     return true;
 }
 
-unsigned AlphabetSet::total() const{
-	unsigned result = 0;
-	for (uint8_t i = 0; i < 26; i++) {
-        result+=data[i];
-  }
-	return result;
+unsigned AlphabetSet::total() const {
+    unsigned result = 0;
+    for (uint8_t i = 0; i < 26; i++) {
+        result += data[i];
+    }
+    return result;
 }
 void AlphabetSet::remove(char c) {
     if (data[charToIndex(c) > 0]) {
@@ -86,6 +87,12 @@ void AlphabetSet::print() const {
     }
 }
 AlphabetSet::AlphabetSet() { reset(); }
+AlphabetSet::AlphabetSet(const string &s) {
+    reset();
+    for (char c : s) {
+        insert(c);
+    }
+}
 AlphabetSet::AlphabetSet(initializer_list<char> list) {
     reset();
     for (char c : list) {

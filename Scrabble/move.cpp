@@ -11,7 +11,6 @@ Move::Move(int x, int y, bool right, string word) {
     this->y = y;
     this->right = right;
     this->word = word;
-    value = 0;
 }
 // returns the points gained if this move was placed onto board
 // assumes the move is legal
@@ -90,7 +89,7 @@ int Move::getPoints(const Board& board) const {
                                 crossPoints += tileValues.at(crossWord[j]);
                         }
                     }
-										totalCrossPoints += crossPoints * crossMultiplier;
+                    totalCrossPoints += crossPoints * crossMultiplier;
                 }
             }
         }
@@ -164,7 +163,7 @@ int Move::getPoints(const Board& board) const {
                                 crossPoints += tileValues.at(crossWord[j]);
                         }
                     }
-										totalCrossPoints += crossPoints * crossMultiplier;
+                    totalCrossPoints += crossPoints * crossMultiplier;
                 }
             }
         }
