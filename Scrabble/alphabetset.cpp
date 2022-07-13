@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <stdexcept>
-
+#include <cstring>
 #include "rules.h"
 
 using namespace std;

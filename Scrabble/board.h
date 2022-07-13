@@ -6,7 +6,7 @@
 
 class Move;
 struct Board {
-    static const int size = 15;
+    static const unsigned size = 15;
     void applyMove(const Move& move);
     void print() const;
     char data[size][size];
