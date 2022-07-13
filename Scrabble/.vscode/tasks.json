@@ -10,8 +10,8 @@
                 "${workspaceFolder}/*.cpp",
                 "-o",
                 "scrabble",
-                "-lfltk"
-
+                "-lfltk",
+                "-pthread"
             ],
             "options": {
                 "cwd": "${fileDirname}"
