@@ -5,11 +5,13 @@
 #include <FL/Fl_Input.H>
 #include <FL/Fl_Multiline_Output.H>
 #include <FL/Fl_Output.H>
+#include <FL/Fl_Progress.H>
 #include <FL/Fl_Window.H>
 #include <stdarg.h>
 
 #include <algorithm>
 #include <atomic>
+#include <cmath>
 #include <cstring>
 #include <mutex>
 #include <thread>
@@ -23,7 +25,22 @@ struct SolverParams {
     Fl_Input* tileInput;
     BoardDisplay* boardDisplay;
     Fl_Multiline_Output* statusOutput;
+    Fl_Progress* progressBar;
 };
+struct UpdateParams {
+    Fl_Progress* progressBar;
+    std::atomic<float>* completion;
+};
+void updateProgress(void* param) {
+    UpdateParams* params = reinterpret_cast<UpdateParams*>(param);
+    float val = params->completion->load();
+    Fl::lock();
+    std::cout << params->progressBar->value() << std::endl;
+    params->progressBar->value(val);
+    Fl::unlock();
+    Fl::awake();
+    Fl::repeat_timeout(0.1, updateProgress, param);
+}
 std::thread solverThread;
 std::atomic_bool isSolving(false);
 void solve(SolverParams* widgets) {
@@ -53,7 +70,12 @@ void solve(SolverParams* widgets) {
     std::transform(tileString.begin(), tileString.end(), tileString.begin(), ::toupper);
     AlphabetSet tileSet(tileString);
     printMsg("Finding Moves...");
-    std::vector<Move> legalMoves = getLegalMoves(board, tileSet);
+    std::atomic<float> completion(0);
+    UpdateParams updateParams{widgets->progressBar, &completion};
+    Fl::add_timeout(0.1, updateProgress, &updateParams);
+    std::vector<Move> legalMoves = getLegalMoves(board, tileSet, completion);
+    Fl::remove_timeout(updateProgress);
+    widgets->progressBar->value(1);
     if (legalMoves.size() == 0) {
         printMsg("No legal moves found");
         return;
@@ -93,16 +115,25 @@ int main(int argc, char** argv) {
     Fl_Group controlGroup(win.h(), 0, win.w() - win.h(), win.h());
     controlGroup.box(FL_UP_BOX);
     int x = win.h() + (controlGroup.w() - 100) / 2;
-    Fl_Input tileInput(x, 80, 100, 30, "Enter Letters Here");
+    Fl_Input tileInput(x, 40, 100, 30, "Enter Letters Here");
     tileInput.align(FL_ALIGN_TOP);
 
     Fl_Button solveButton(x, 400, 100, 30, "Solve");
+    solveButton.shortcut(FL_Enter);
+    x = win.h() + (controlGroup.w() - 350) / 2;
+    Fl_Multiline_Output statusDisplay(x, 180, 350, 200, "Status");
+    statusDisplay.box(FL_BORDER_BOX);
+    statusDisplay.align(FL_ALIGN_TOP);
     x = win.h() + (controlGroup.w() - 200) / 2;
-    Fl_Multiline_Output statusDisplay(x, 120, 200, 200);
-
+    Fl_Progress progressBar(x, 100, 200, 30, "Solving Progress");
+    progressBar.box(FL_DOWN_BOX);
+    progressBar.selection_color(FL_GREEN);
+    progressBar.align(FL_ALIGN_TOP);
+    progressBar.minimum(0);
+    progressBar.maximum(1);
     statusDisplay.value("Ready...");
     controlGroup.end();
-    SolverParams params{&tileInput, &display, &statusDisplay};
+    SolverParams params{&tileInput, &display, &statusDisplay, &progressBar};
     solveButton.callback(solveAsync, &params);
     win.end();
     win.show(argc, argv);

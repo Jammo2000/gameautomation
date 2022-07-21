@@ -40,9 +40,9 @@ class BoardDisplay : public Fl_Widget {
     void setBoard(const Board *value) {
         board = (Board *)value;
     }
-    protected:
-    void draw() {
 
+   protected:
+    void draw() {
         // damage table
         // 1 - Cursor redraw
         int cellWidth = w() / Board::size;
@@ -107,9 +107,21 @@ class BoardDisplay : public Fl_Widget {
                 focused = false;
                 redraw();
                 return 1;
+            case FL_PUSH:
+                return 1;
+            case FL_RELEASE:
+                if (Fl::event_button() == FL_LEFT_MOUSE) {
+                    // relative to me
+                    int mouseX = Fl::event_x() - x();
+                    int mouseY = Fl::event_y() - y();
+                    cursorX = mouseX / (w() / Board::size);
+                    cursorY = mouseY / (h() / Board::size);
+                    take_focus();
+                    return 1;
+                }
             case FL_KEYDOWN: {
                 bool change = true;
-                //std::cout<<Fl::event_key()<<"\n"<<Fl::event_text()<<"\n";
+                // std::cout<<Fl::event_key()<<"\n"<<Fl::event_text()<<"\n";
                 switch (Fl::event_key()) {
                     case 65362:  // up arrow
                         cursorY--;
@@ -123,17 +135,18 @@ class BoardDisplay : public Fl_Widget {
                     case 65363:  // right arrow
                         cursorX++;
                         break;
-                    case 65535://delete
-                    case 65288://backspace
+                    case 65535:  // delete
+                    case 65288:  // backspace
                         board->data[cursorY][cursorX] = emptyBoard.at(cursorX, cursorY);
-                        std::cout<<"Destroy"<<"\n";
+                        std::cout << "Destroy"
+                                  << "\n";
                         break;
                     default:
-                    change = false;
+                        change = false;
                 }
                 char key = Fl::event_text()[0];
                 key = toupper(key);
-                if(isLetter(key)){
+                if (isLetter(key)) {
                     board->data[cursorY][cursorX] = key;
                     redraw();
                 }

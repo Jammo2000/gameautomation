@@ -4,6 +4,7 @@
 #include <array>
 #include <cmath>
 #include <fstream>
+#include <functional>
 #include <initializer_list>
 #include <iostream>
 #include <vector>
@@ -75,9 +76,6 @@ array<array<AlphabetSet, Board::size>, Board::size> getAllowedLetters(
             if (isLetter(board.at(x, y))) {
                 returnValue[y][x].insert(board.at(x, y));
             } else if (right) {
-                if (x == 7 && y == 0) {
-                    cout << "yeetus" << endl;
-                }
                 string crossWord = "";
                 int searchY = y - 1;
                 int letterPosition;  // position of letter in the word
@@ -140,8 +138,8 @@ array<array<AlphabetSet, Board::size>, Board::size> getAllowedLetters(
     }
     return returnValue;
 }
-
-vector<Move> getLegalMoves(const Board &board, const AlphabetSet &tilesAvailable) {
+vector<Move> getLegalMoves(
+    const Board &board, const AlphabetSet &tilesAvailable, std::atomic<float> &completion) {
     vector<Move> moves;
     bool hasCharacter = false;
     for (int x = 0; x < Board::size; x++) {
@@ -158,14 +156,10 @@ vector<Move> getLegalMoves(const Board &board, const AlphabetSet &tilesAvailable
         for (bool right : dirs) {
             auto validLetters = getAllowedLetters(board, right);
             for (int wordIndex = 0; wordIndex < wordlist.size(); wordIndex++) {
-                float completion =
+                completion =
                     (float)(wordIndex + wordlist.size() * right) /
                     (wordlist.size() * 2);
-                if (floor(completion * 100) > floor(prevCompletion * 100)) {
-                    cout << "finding move, " << floor(completion * 100)
-                         << "% complete" << endl;
-                    prevCompletion = completion;
-                }
+
                 string word = wordlist[wordIndex];
                 int wordLength = word.length();
                 int maxX = right ? Board::size - wordLength : Board::size - 1;
@@ -253,20 +247,21 @@ vector<Move> getLegalMoves(const Board &board, const AlphabetSet &tilesAvailable
             }
         }
     } else {  // First move
-        for (string word : wordlist) {
+        for (size_t wordIndex = 0; wordIndex < wordlist.size(); wordIndex++) {
+            string word = wordlist[wordIndex];
             if (word.length() < 3) {
                 continue;  // rule nobody remembers
             }
-            AlphabetSet tilesUsed;
-            for (char c : word) {
-                tilesUsed.insert(c);
-            }
+            AlphabetSet tilesUsed(word);
             if (!tilesAvailable.contains(tilesUsed)) {
                 continue;
             }
             for (int x = 0; x < Board::size; x++) {
                 for (int y = 0; y < Board::size; y++) {
                     for (bool right : dirs) {
+                        completion =
+                            (float)(wordIndex + wordlist.size() * right) /
+                            (wordlist.size() * 2);
                         int endX = x + (word.length() - 1) * right;
                         int endY = y + (word.length() - 1) * !right;
                         if (endX >= Board::size || endY >= Board::size) {
