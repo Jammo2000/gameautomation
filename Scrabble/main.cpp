@@ -35,7 +35,6 @@ void updateProgress(void* param) {
     UpdateParams* params = reinterpret_cast<UpdateParams*>(param);
     float val = params->completion->load();
     Fl::lock();
-    std::cout << params->progressBar->value() << std::endl;
     params->progressBar->value(val);
     Fl::unlock();
     Fl::awake();
@@ -56,8 +55,6 @@ void solve(SolverParams* widgets) {
         spaceLeft = sizeof(msgBuf) - strlen(msgBuf);
         va_list args;
         va_start(args, msg);
-        printf("Buffer: %s\nMessage: ", msgBuf);
-        printf("\n");
         vsnprintf(msgBuf + strlen(msgBuf), spaceLeft, msg, args);
         va_end(args);
         Fl::lock();
