@@ -51,12 +51,12 @@ void solve(SolverParams* widgets) {
     // why tf does fltk use c strings? Its a C++ library
     auto printMsg = [&widgets, &msgBuf](const char* msg, ...) {
         unsigned spaceLeft = sizeof(msgBuf) - strlen(msgBuf) - 1;  // null terminator isnt in strlen;
-        strncat(msgBuf, "\n", spaceLeft);
         spaceLeft = sizeof(msgBuf) - strlen(msgBuf);
         va_list args;
         va_start(args, msg);
         vsnprintf(msgBuf + strlen(msgBuf), spaceLeft, msg, args);
         va_end(args);
+        strncat(msgBuf, "\n", spaceLeft);
         Fl::lock();
         widgets->statusOutput->value(msgBuf);
         Fl::unlock();
@@ -66,7 +66,7 @@ void solve(SolverParams* widgets) {
     // Have to make tiles uppercase
     std::transform(tileString.begin(), tileString.end(), tileString.begin(), ::toupper);
     AlphabetSet tileSet(tileString);
-    printMsg("Finding Moves...");
+    printMsg("Finding legal moves...");
     std::atomic<float> completion(0);
     UpdateParams updateParams{widgets->progressBar, &completion};
     Fl::add_timeout(0.1, updateProgress, &updateParams);
@@ -80,7 +80,7 @@ void solve(SolverParams* widgets) {
     printMsg("Found %zu legal moves", legalMoves.size());
     unsigned bestValue = 0;
     Move* bestMove = NULL;
-    printMsg("Calculating point values...");
+    printMsg("Finding best move...");
     for (Move& move : legalMoves) {
         unsigned value = move.getPoints(board);
         if (value > bestValue) {
