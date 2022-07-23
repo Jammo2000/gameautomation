@@ -83,9 +83,7 @@ array<array<AlphabetSet, Board::size>, Board::size> getAllowedLetters(
                 while (searchY > 0 && isLetter(board.at(x, searchY))) {
                     searchY--;
                 }
-                if (searchY > 0 || y == 0) {
-                    searchY++;
-                }
+                searchY++;
                 letterPosition = y - searchY;
                 while (searchY < Board::size &&
                        (isLetter(board.at(x, searchY)) || searchY == y)) {
@@ -112,9 +110,7 @@ array<array<AlphabetSet, Board::size>, Board::size> getAllowedLetters(
                 while (searchX > 0 && isLetter(board.at(searchX, y))) {
                     searchX--;
                 }
-                if (searchX > 0 || x == 0) {
-                    searchX++;
-                }
+                searchX++;
                 letterPosition = x - searchX;
                 while (searchX < Board::size &&
                        (isLetter(board.at(searchX, y)) || searchX == x)) {

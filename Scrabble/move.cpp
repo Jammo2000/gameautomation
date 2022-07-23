@@ -54,9 +54,7 @@ int Move::getPoints(const Board& board) const {
                 while (searchY > 0 && isLetter(board.at(x + i, searchY))) {
                     searchY--;
                 }
-                if (searchY > 0) {
-                    searchY++;
-                }
+                searchY++;
                 searchTop = searchY;
                 letterPosition = y - searchY;
                 while (searchY < Board::size &&
@@ -128,9 +126,7 @@ int Move::getPoints(const Board& board) const {
                 while (searchX > 0 && isLetter(board.at(searchX, y + i))) {
                     searchX--;
                 }
-                if (searchX > 0) {
-                    searchX++;
-                }
+                searchX++;
                 searchTop = searchX;
                 letterPosition = x - searchX;
                 while (searchX < Board::size &&
